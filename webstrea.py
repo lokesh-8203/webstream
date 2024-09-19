@@ -1,41 +1,29 @@
 import streamlit as st
-from streamlit_webrtc import webrtc_streamer, VideoTransformerBase
-import av
 import cv2
+import numpy as np
 
-http_stream = "http://192.168.0.100:8080/video"  # Replace with your HTTP stream URL
+st.title("HTTP Stream with OpenCV")
 
-# Class to handle video frames from the HTTP stream
-class VideoProcessor(VideoTransformerBase):
-    def __init__(self):
-        # Open the HTTP stream with OpenCV
-        self.cap = cv2.VideoCapture(http_stream, cv2.CAP_FFMPEG)
+http_stream = "http://192.168.0.100:8080/video"
 
-    def __del__(self):
-        # Release the video capture when done
-        if self.cap.isOpened():
-            self.cap.release()
+# Capture video
+cap = cv2.VideoCapture(http_stream, cv2.CAP_FFMPEG)
 
-    def transform(self, frame):
-        # Read a frame from the HTTP stream
-        ret, img = self.cap.read()
+while True:
+    ret, frame = cap.read()
+    if not ret:
+        st.write("Failed to capture frame.")
+        break
 
-        if not ret:
-            return av.VideoFrame.from_ndarray(frame.to_ndarray(format="bgr24"), format="bgr24")
+    # Apply any OpenCV processing here
+    # Example: Adding a text overlay
+    frame = cv2.putText(frame, "Streaming from HTTP", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
 
-        # Optionally, apply some OpenCV operations on img here
-        img = cv2.putText(img, "Streaming from HTTP", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+    # Convert frame to RGB
+    frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
-        # Return the processed frame
-        return av.VideoFrame.from_ndarray(img, format="bgr24")
+    # Display the frame
+    st.image(frame_rgb, channels="RGB")
 
-
-# Set up Streamlit
-st.title("HTTP Stream in Streamlit with OpenCV")
-
-# Use the webrtc_streamer to stream the live HTTP feed
-webrtc_streamer(
-    key="example-http-stream",
-    video_transformer_factory=VideoProcessor,
-    sendback_audio=False
-)
+# Release the capture when done
+cap.release()
