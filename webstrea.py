@@ -4,7 +4,7 @@ import numpy as np
 
 st.title("HTTP Video Stream with OpenCV and Streamlit")
 
-http_stream = "http://192.168.0.100:8080/video"  # Replace with your HTTP stream URL
+http_stream = "http://192.168.0.100:8080/video.mp4"  # Replace with your HTTP stream URL
 
 # Initialize the video capture
 cap = cv2.VideoCapture(http_stream, cv2.CAP_FFMPEG)
